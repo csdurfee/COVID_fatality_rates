@@ -176,13 +176,31 @@ def get_size_data():
     return gaz[["ALAND_SQMI"]]
 
 
+def get_ethnicity_data():
+    populations = pd.read_csv("stco-mr2010-1.csv")
+
+    whites = populations.loc[populations.IMPRACE == 1, ["STNAME", "CTYNAME", "RESPOP"]]
+
+    whites["COUNTY"] = whites["CTYNAME"].str.replace("County", "")
+
+    grouped = whites.groupby(["STNAME", "COUNTY"]).sum("RESPOP") \
+                    .reset_index() \
+                    .rename(columns={"RESPOP": "CAUCASIAN_POP", "STNAME": "STATE"})
+
+    return grouped
+
+
+
 def get_all_data():
     vd = get_vax_data()
     fatality_data = get_covid_fatality_data(vd)
     income_data = get_county_income_data()
     health_data = get_county_health_data()
     size_data = get_size_data()
+    #eth_data = get_ethnicity_data()
 
+    #.merge(eth_data, on=['STATE', 'COUNTY']) \
+        
     all_data = fatality_data.reset_index() \
         .merge(income_data, on=['STATE', 'COUNTY']) \
         .set_index("FIPS") \
