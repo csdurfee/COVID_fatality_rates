@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import datetime
 
 
 USE_CACHE = True
@@ -9,12 +10,15 @@ if USE_CACHE:
     COVID_DEATHS_URL  = "time_series_covid19_deaths_US.csv"
     PER_CAPITA_URL    =  "percapita.html"
     COUNTY_HEALTH_URL = "2021 County Health Rankings Data - v1.xlsx"
+    POLITICAL_DATA    = "countypres_2000-2016.csv"
 
 else:
     VAX_URL           = "https://github.com/bansallab/vaccinetracking/blob/main/vacc_data/data_county_current.csv"
     COVID_DEATHS_URL  = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv"
     PER_CAPITA_URL    = "https://en.wikipedia.org/wiki/List_of_United_States_counties_by_per_capita_income"
     COUNTY_HEALTH_URL = "https://www.countyhealthrankings.org/sites/default/files/media/document/2021%20County%20Health%20Rankings%20Data%20-%20v1.xlsx"
+    POLITICAL_DATA    = None # FIXME
+
 
 def get_vax_data():
     ## this data is from 
@@ -24,8 +28,11 @@ def get_vax_data():
     ## rename to make usage of column clear
     vax_df = vax_df[vax_df.GEOFLAG == 'County'].rename(columns={'COUNTY': 'FIPS'})
 
-    ## these are irrelevant
-    vax_df = vax_df.drop(['STATE', 'WEEK', 'YEAR'], axis=1)
+    ## drop stuff that doesn't matter and rename coverage columns to be statsmodels.formula friendly
+    vax_df = vax_df.drop(['STATE', 'WEEK', 'YEAR'], axis=1) \
+                .rename(columns={'Partial Coverage': 'Partial_Coverage',
+                                 'Booster Coverage': 'Booster_Coverage',
+                                 'Complete Coverage': 'Complete_Coverage'})
 
 
     partial  = vax_df[vax_df.CASE_TYPE == 'Partial Coverage'].pivot_table("CASES", "FIPS", "CASE_TYPE")
@@ -38,28 +45,50 @@ def get_vax_data():
     return partial.join(booster).join(complete).join(popn_by_fips)
 
 def get_covid_fatality_data(vax_data):
-    deaths_df = pd.read_csv(COVID_DEATHS_URL) # , dtype = death_dtypes)
+    deaths_df = pd.read_csv(COVID_DEATHS_URL)
 
     ## FIXME: get the last column of the time series rather than '2/28/22' 
     # hardcoded.
-    cols = ['FIPS', 'Admin2', 'Province_State', '2/28/22', '3/11/21']
+    cols = ['FIPS', 'Admin2', 'Province_State', '3/11/22', '3/11/21']
+    translate_cols = {  
+                    '3/11/21': 'DEATHS_FIRST_YEAR',
+                    '3/11/22': 'DEATHS',
+                    'Admin2': 'COUNTY',
+                    'Province_State': 'STATE' }
 
-    deaths_cleaned = deaths_df.loc[:, cols].rename(columns={'3/11/21': 'DEATHS_ONEYEAR',
-                                                            '2/28/22': 'DEATHS',
-                                                            'Admin2': 'COUNTY',
-                                                            'Province_State': 'STATE' })
+
+    deaths_cleaned = deaths_df.loc[:, cols].rename(columns=translate_cols)
 
     covid_df = deaths_cleaned.set_index("FIPS").join(vax_data).dropna()
 
     covid_df["DEATH_RATE"] = covid_df["DEATHS"] / covid_df["POPN"]
 
-    covid_df["DEATH_RATE_ONEYEAR"] = covid_df["DEATHS_ONEYEAR"] / covid_df["POPN"]
+    covid_df["DEATH_RATE_FIRST_YEAR"] = covid_df["DEATHS_FIRST_YEAR"] / covid_df["POPN"]
+
+    covid_df['DEATH_RATE_SECOND_YEAR'] = (covid_df["DEATHS"] - covid_df["DEATHS_FIRST_YEAR"] ) / covid_df["POPN"]
 
     return covid_df
 
 
-def get_county_income_data():
+def get_covid_daily_fatalities():
+    del_cols = ["UID", "iso2", "iso3", "code3", "Admin2", "Province_State",
+                "Country_Region", "Lat", "Long_", "Combined_Key", "Population"]
+    
+    deaths_df = pd.read_csv(COVID_DEATHS_URL, parse_dates = True)
 
+    # in the evening, I undo my belt
+    melted = deaths_df.drop(columns=del_cols).melt(id_vars=["FIPS"], var_name="Date", value_name="Deaths")
+
+    # convert dates from string
+    melted['Date'] = melted["Date"].astype("datetime64[ns]")
+
+    return melted
+
+
+def get_monthly_correlations():
+    pass
+
+def get_county_income_data():
     conversions = {
                     'Population': int,
                     'Number ofhouseholds': int
@@ -67,12 +96,12 @@ def get_county_income_data():
 
     html_crud = pd.read_html(PER_CAPITA_URL)[2]
 
-    # this will make rows with "-" in them be nan
+    # this will make rows with "-" in them (which are summary rows) be nan
     html_crud['Rank'] = pd.to_numeric(html_crud['Rank'], errors="coerce")
 
     html_crud = html_crud.dropna()
 
-    ## deal with dollar signs, y'all
+    ## deal with dollar signs
     # taken from: https://stackoverflow.com/questions/32464280/converting-currency-with-to-numbers-in-python-pandas
 
     dollar_values = ['Per capitaincome', 'Medianhouseholdincome', 'Medianfamilyincome']
@@ -189,7 +218,19 @@ def get_ethnicity_data():
 
     return grouped
 
+def get_political_data():
+    voting_df = pd.read_csv(POLITICAL_DATA)
 
+    voting_df = voting_df.loc[(voting_df.year == 2016) & (voting_df.party == "republican"), 
+                            ["FIPS", "candidatevotes", "totalvotes"]] \
+                    .dropna() \
+                    .set_index("FIPS") \
+                    .rename(columns={"candidatevotes": "2016_repub_votes", 
+                                    "totalvotes": "2016_total_votes"})
+    
+    voting_df['REPUB_PARTISAN'] = voting_df['2016_repub_votes'] / voting_df['2016_total_votes']
+
+    return voting_df
 
 def get_all_data():
     vd = get_vax_data()
@@ -197,18 +238,19 @@ def get_all_data():
     income_data = get_county_income_data()
     health_data = get_county_health_data()
     size_data = get_size_data()
-    #eth_data = get_ethnicity_data()
+    political_data = get_political_data()
 
-    #.merge(eth_data, on=['STATE', 'COUNTY']) \
         
     all_data = fatality_data.reset_index() \
         .merge(income_data, on=['STATE', 'COUNTY']) \
         .set_index("FIPS") \
         .join(health_data) \
-        .join(size_data)
+        .join(size_data) \
+        .join(political_data)
 
     all_data['DENSITY'] = all_data['POPN'] / all_data['ALAND_SQMI']
 
-    ## TODO: need to drop stuff where we have zeroes (eg Utah reporting 0 fatalities at county level)
+    ## TODO??? need to drop stuff where we have zeroes (eg Utah reporting 0 fatalities at county level)
+
 
     return all_data
