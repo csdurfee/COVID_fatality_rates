@@ -90,10 +90,11 @@ def get_monthly_death_counts():
     ##   get the death total at that point in time
     ##   calculate the diffs to get the monthly death totals.
 
+    ## TODO: refactor this to handle other date ranges (eg quarterly)
+
     snapshot_dates = pd.date_range("3/1/2020", freq="M", periods=24)
     
     daily_df = get_covid_daily_fatalities().set_index("Date")
-
 
     pit_counts = []
     diffs = {}
@@ -114,39 +115,33 @@ def get_monthly_death_counts():
     return diffs
 
 def get_monthly_death_corrs():
-    ### for each monthly death count, get the correlations of other factors
-
+    ### for each monthly death count, get the correlations of other factors so they can
+    ### be plotted as a series.
     corrs = {}
 
     all_data = get_all_data()
     mdc = get_monthly_death_counts()
     for (month, counts) in mdc.items():
-        # month_joined = all_data.join(counts.rename(columns={'Deaths': "THIS_MONTH_DEATHS"}))
-        # ## NONONONO! we need to calculate the monthly per capita death rate...
-        # ## potential collision here
-        # month_joined['MONTHLY_PER_CAPITA_DEATH_RATE'] = month_joined['THIS_MONTH_DEATHS'] / month_
-
-
         month_joined = all_data.join(counts.rename(columns={'Deaths': "THIS_MONTH_DEATHS"}))
-
         month_joined['MONTHLY_PER_CAPITA_DEATH_RATE'] = month_joined['THIS_MONTH_DEATHS'] / month_joined['POPN']
-
-        # all_data['MONTHLY_PER_CAPITA_DEATH_RATE'] = counts['Deaths'] / all_data['POPN']
-
-
         corrs[month] = month_joined.corr()['MONTHLY_PER_CAPITA_DEATH_RATE']
-
-
     return corrs
 
-def get_monthly_corr_series(attr_name):
+def get_monthly_corr_series(attr_name, death_corrs=None):
     vals = []
-    death_corrs = get_monthly_death_corrs()
+    if death_corrs is None:
+        death_corrs = get_monthly_death_corrs()
     for (month, counts) in death_corrs.items():
         vals.append(counts[attr_name])
-
     return vals
 
+
+def get_timeseries():
+    ### TODO: get all columns and put them in a sensible structure so we can plot them as timeseries.
+
+    # death_corrs = get_monthly_death_corrs()
+    # factors = 
+    pass
 
 def get_county_income_data():
     conversions = {
@@ -183,6 +178,28 @@ def get_county_income_data():
                                     'Rank': 'PER_CAPITA_RANK'}).astype({'POPULATION': int, 'HOUSEHOLDS': int})
 
     return html_crud
+
+
+def get_additional_measure_data():
+    xls = pd.ExcelFile("2021 County Health Rankings Data - v1.xlsx")
+    foo = pd.read_excel(xls, "Additional Measure Data", header=1)
+
+    cols = ['Life Expectancy', 'Age-Adjusted Death Rate', 'Age-Adjusted Mortality (White)', 
+            'Infant Mortality Rate', 'Drug Overdose Mortality Rate', 
+            '% Uninsured', 'High School Graduation Rate', 'Homicide Rate', 
+            'Suicide Rate (Age-Adjusted)', 'Firearm Fatalities Rate', '% Non-Hispanic White',
+            '% Adults with Diabetes', 'Average Grade Performance',
+            'Age-Adjusted Mortality (Black)', 'Age-Adjusted Mortality (Hispanic)','% Broadband Access',
+            '% Rural', '% 65 and Over', '% Black', 'Segregation index', '% Food Insecure']
+
+    ## these all need to be imputed...
+    # for col in cols:
+    #     non_na = len(foo[col].dropna())
+    #     print(f"{col} -- {non_na}")
+
+    ## imputation: all above factors missing more than a million people get tossed???
+
+    return foo.set_index("FIPS").loc[:, cols]
 
 def get_county_health_data():
     cols = {
