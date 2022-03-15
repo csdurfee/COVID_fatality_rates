@@ -85,8 +85,68 @@ def get_covid_daily_fatalities():
     return melted
 
 
-def get_monthly_correlations():
-    pass
+def get_monthly_death_counts():
+    ## for every month from April 2020 to March 2022:
+    ##   get the death total at that point in time
+    ##   calculate the diffs to get the monthly death totals.
+
+    snapshot_dates = pd.date_range("3/1/2020", freq="M", periods=24)
+    
+    daily_df = get_covid_daily_fatalities().set_index("Date")
+
+
+    pit_counts = []
+    diffs = {}
+
+    for date in snapshot_dates:
+        as_str = date.strftime("%Y-%m-%d")
+        point_in_time_count = daily_df.loc[as_str, ["FIPS", "Deaths"]].set_index("FIPS")
+
+        if len(pit_counts) > 0:
+            # this is ugly =(
+            monthly_change = point_in_time_count - pit_counts[-1]
+            diffs[as_str] = monthly_change
+
+        # set up diffs for next iteration
+        pit_counts.append(point_in_time_count)
+        prev_date = date
+
+    return diffs
+
+def get_monthly_death_corrs():
+    ### for each monthly death count, get the correlations of other factors
+
+    corrs = {}
+
+    all_data = get_all_data()
+    mdc = get_monthly_death_counts()
+    for (month, counts) in mdc.items():
+        # month_joined = all_data.join(counts.rename(columns={'Deaths': "THIS_MONTH_DEATHS"}))
+        # ## NONONONO! we need to calculate the monthly per capita death rate...
+        # ## potential collision here
+        # month_joined['MONTHLY_PER_CAPITA_DEATH_RATE'] = month_joined['THIS_MONTH_DEATHS'] / month_
+
+
+        month_joined = all_data.join(counts.rename(columns={'Deaths': "THIS_MONTH_DEATHS"}))
+
+        month_joined['MONTHLY_PER_CAPITA_DEATH_RATE'] = month_joined['THIS_MONTH_DEATHS'] / month_joined['POPN']
+
+        # all_data['MONTHLY_PER_CAPITA_DEATH_RATE'] = counts['Deaths'] / all_data['POPN']
+
+
+        corrs[month] = month_joined.corr()['MONTHLY_PER_CAPITA_DEATH_RATE']
+
+
+    return corrs
+
+def get_monthly_corr_series(attr_name):
+    vals = []
+    death_corrs = get_monthly_death_corrs()
+    for (month, counts) in death_corrs.items():
+        vals.append(counts[attr_name])
+
+    return vals
+
 
 def get_county_income_data():
     conversions = {
