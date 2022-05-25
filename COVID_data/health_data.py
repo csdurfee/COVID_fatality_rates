@@ -1,6 +1,6 @@
 import pandas as pd
 
-COUNTY_HEALTH_URL = "2019 County Health Rankings Data - v3.xls"
+COUNTY_HEALTH_URL = "cache/2019 County Health Rankings Data - v3.xls"
 
 def get_ranked_data():
     xls = pd.ExcelFile(COUNTY_HEALTH_URL)

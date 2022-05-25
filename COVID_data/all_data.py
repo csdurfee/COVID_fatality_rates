@@ -7,7 +7,6 @@ from .health_data import *
 from .income_data import *
 from .vaccine_data import *
 
-
 def get_all_corr_series(monthly=True):
     all_series = {}
     death_corrs = get_death_corrs(monthly)

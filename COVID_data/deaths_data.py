@@ -1,15 +1,14 @@
 import pandas as pd
 
-CACHE = True
+def get_covid_fatality_data(cache=True):
+    if cache:
+        from pathlib import Path
+        COVID_DEATHS_URL  = str(Path(__file__).parent) + "/cache/time_series_covid19_deaths_US.csv"
+    else:
+        COVID_DEATHS_URL  = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv"
 
-if CACHE:
-    COVID_DEATHS_URL  = "time_series_covid19_deaths_US.csv"
-else:
-    COVID_DEATHS_URL  = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv"
-
-
-def get_covid_fatality_data():
     deaths_df = pd.read_csv(COVID_DEATHS_URL)
+
 
     ## FIXME: get the last column of the time series rather than '2/28/22' 
     # hardcoded.
