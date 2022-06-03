@@ -1,8 +1,12 @@
 import pandas as pd
 
-COUNTY_HEALTH_URL = "cache/2019 County Health Rankings Data - v3.xls"
+def get_ranked_data(config):
+    if config.USE_CACHE:
+        COUNTY_HEALTH_URL = config.CACHE_DIR + \
+            "/2019 County Health Rankings Data - v3.xls"
+    else:
+        COUNTY_HEALTH_URL = "https://www.countyhealthrankings.org/sites/default/files/media/document/2019%20County%20Health%20Rankings%20Data%20-%20v3.xls"
 
-def get_ranked_data():
     xls = pd.ExcelFile(COUNTY_HEALTH_URL)
     foo = pd.read_excel(xls, "Ranked Measure Data", header=1)
 
@@ -36,7 +40,13 @@ def get_ranked_data():
     ]
     return foo.set_index("FIPS").loc[:, cols]
 
-def get_additional_measure_data():
+def get_additional_measure_data(config):
+    if config.USE_CACHE:
+        COUNTY_HEALTH_URL = config.CACHE_DIR + \
+            "/2019 County Health Rankings Data - v3.xls"
+    else:
+        COUNTY_HEALTH_URL = "https://www.countyhealthrankings.org/sites/default/files/media/document/2019%20County%20Health%20Rankings%20Data%20-%20v3.xls"
+
     xls = pd.ExcelFile(COUNTY_HEALTH_URL)
     measure_data = pd.read_excel(xls, "Additional Measure Data", header=1)
 
@@ -72,7 +82,7 @@ def get_additional_measure_data():
     ## NO IMPUTATION
     return measure_data.set_index("FIPS").loc[:, cols]
 
-def get_county_health_data():
+def get_county_health_data(config):
     cols = {
         'Rank':     'HEALTH_OUTCOMES_RANK',
         'Quartile': 'HEALTH_OUTCOMES_QUARTILE',
@@ -86,6 +96,12 @@ def get_county_health_data():
         'HEALTH_FACTORS_RANK': float,
         'HEALTH_FACTORS_QUARTILE': float
     }
+
+    if config.USE_CACHE:
+        COUNTY_HEALTH_URL = config.CACHE_DIR + \
+            "/2019 County Health Rankings Data - v3.xls"
+    else:
+        COUNTY_HEALTH_URL = "https://www.countyhealthrankings.org/sites/default/files/media/document/2019%20County%20Health%20Rankings%20Data%20-%20v3.xls"
 
     xls = pd.ExcelFile(COUNTY_HEALTH_URL)
 
@@ -151,10 +167,10 @@ def get_opioid_data():
     data = pd.read_html(url)
     return data[0].drop(["State", "County"], axis=1).set_index("County FIPS Code")
 
-def get_social_vuln_data(cache=True):
+def get_social_vuln_data(config):
     # doc: https://www.atsdr.cdc.gov/placeandhealth/svi/documentation/pdf/SVI2018Documentation-H.pdf
-    if cache:
-        SOCIAL_VULN_URL   = "SVI2018_US_COUNTY.csv"
+    if config.USE_CACHE:
+        SOCIAL_VULN_URL   = config.CACHE_DIR + "/SVI2018_US_COUNTY.csv"
     else:
         SOCIAL_VULN_URL   = "https://svi.cdc.gov/Documents/Data/2018_SVI_Data/CSV/SVI2018_US_COUNTY.csv" 
  

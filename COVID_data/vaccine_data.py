@@ -1,8 +1,8 @@
 import pandas as pd
 
-def get_vax_data(cached=True):
-    if cached:
-        VAX_URL = "vaccinetracking/vacc_data/data_county_current.csv"
+def get_vax_data(config):
+    if config.USE_CACHE:
+        VAX_URL = config.CACHE_DIR + "/vaccinetracking/vacc_data/data_county_current.csv"
     else:
         VAX_URL = "https://github.com/bansallab/vaccinetracking/blob/main/vacc_data/data_county_current.csv"
 
@@ -34,23 +34,3 @@ def get_size_data():
             .set_index("FIPS")
 
     return gaz[["ALAND_SQMI"]]
-
-def get_political_data(cache=False):
-    if cache:
-        POLITICAL_DATA    = "countypres_2000-2016.csv"
-    else:
-        POLITICAL_DATA    = None # FIXME
-    voting_df = pd.read_csv(POLITICAL_DATA)
-
-    voting_df = voting_df.loc[(voting_df.year == 2016) & (voting_df.party == "republican"), 
-                            ["FIPS", "candidatevotes", "totalvotes"]] \
-                    .dropna() \
-                    .set_index("FIPS") \
-                    .rename(columns={"candidatevotes": "2016_repub_votes", 
-                                    "totalvotes": "2016_total_votes"}) \
-                    .dropna() ## there are only 3 counties (all in Alaska) with no data here.
-    
-    voting_df['REPUB_PARTISAN'] = voting_df['2016_repub_votes'] / voting_df['2016_total_votes']
-    voting_df["REPUB_QUARTILE"] = pd.qcut(voting_df['REPUB_PARTISAN'], 4, labels=False)
-
-    return voting_df

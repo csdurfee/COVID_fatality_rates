@@ -5,6 +5,7 @@ import datetime
 from .deaths_data import *
 from .health_data import *
 from .income_data import *
+from .political_data import *
 from .vaccine_data import *
 
 def get_all_corr_series(monthly=True):
@@ -21,21 +22,21 @@ def get_all_corr_series(monthly=True):
     return all_series
 
 
-def _all_data_base():
-    return get_covid_fatality_data() \
+def _all_data_base(config):
+    return get_covid_fatality_data(config) \
         .reset_index() \
-        .merge(get_county_income_data(), on=['STATE', 'COUNTY']) \
+        .merge(get_county_income_data(config), on=['STATE', 'COUNTY']) \
         .set_index("FIPS") \
-        .join(get_vax_data()) \
-        .join(get_county_health_data()) \
-        .join(get_size_data()) \
-        .join(get_political_data()) \
-        .join(get_additional_measure_data()) \
-        .join(get_social_vuln_data()) \
-        .join(get_ranked_data())
+        .join(get_vax_data(config)) \
+        .join(get_county_health_data(config)) \
+        .join(get_size_data(config)) \
+        .join(get_political_data(config)) \
+        .join(get_additional_measure_data(config)) \
+        .join(get_social_vuln_data(config)) \
+        .join(get_ranked_data(config))
 
-def get_all_data():
-    all_data = _all_data_base()
+def get_all_data(config):
+    all_data = _all_data_base(config)
 
     ## calculate rates/aggs
     all_data['DENSITY'] = all_data['POPN'] / all_data['ALAND_SQMI']

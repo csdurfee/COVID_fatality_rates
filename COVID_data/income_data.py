@@ -1,10 +1,11 @@
 import pandas as pd
 
-def get_county_income_data(cache=False):
-    if cache:
-        PER_CAPITA_URL    =  "percapita.html"
+def get_county_income_data(config):
+    if config.USE_CACHE:
+        PER_CAPITA_URL    =  config.CACHE_DIR + "/percapita.html"
     else:
         PER_CAPITA_URL    = "https://en.wikipedia.org/wiki/List_of_United_States_counties_by_per_capita_income"
+    
     conversions = {
         'Population': int,
         'Number ofhouseholds': int
