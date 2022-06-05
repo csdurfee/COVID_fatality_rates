@@ -16,6 +16,6 @@ def get_political_data(config):
                     .dropna() ## there are only 3 counties (all in Alaska) with no data here.
     
     voting_df['REPUB_PARTISAN'] = voting_df['2016_repub_votes'] / voting_df['2016_total_votes']
-    voting_df["REPUB_QUARTILE"] = pd.qcut(voting_df['REPUB_PARTISAN'], 4, labels=False)
+    #voting_df["REPUB_QUARTILE"] = pd.qcut(voting_df['REPUB_PARTISAN'], 4, labels=False)
 
     return voting_df

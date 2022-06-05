@@ -50,9 +50,9 @@ def get_all_data(config):
     all_data['DEATH_RATE_OMICRON'] = all_data['OMICRON_DEATHS'] / all_data['POPN']
 
     # let's do some quartiles
-    all_data['DEATH_RATE_QUARTILE'] = pd.qcut(all_data['DEATH_RATE'], 4, labels=False)
-    all_data['VAX_QUARTILE']        = pd.qcut(all_data['Booster Coverage'], 4, labels=False)
-    all_data['REPUB_QUARTILE']      = pd.qcut(all_data['REPUB_PARTISAN'], 4, labels=False)
+    # all_data['DEATH_RATE_QUARTILE'] = pd.qcut(all_data['DEATH_RATE'], 4, labels=False)
+    # all_data['VAX_QUARTILE']        = pd.qcut(all_data['Booster Coverage'], 4, labels=False)
+    # all_data['REPUB_QUARTILE']      = pd.qcut(all_data['REPUB_PARTISAN'], 4, labels=False)
 
 
     ## there are some counties in Alaska we don't have voting data for. I'm not clear why this is causing
