@@ -6,6 +6,7 @@ from .deaths_data import *
 from .health_data import *
 from .income_data import *
 from .political_data import *
+from .size_data import *
 from .vaccine_data import *
 
 def get_all_corr_series(monthly=True):

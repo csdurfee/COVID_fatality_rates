@@ -28,9 +28,3 @@ def get_vax_data(config):
 
     return partial.join(booster).join(complete).join(popn_by_fips)
 
-def get_size_data():
-    gaz = pd.read_csv("2021_Gaz_counties_national.txt", delimiter="\t") \
-            .rename(columns={'GEOID': 'FIPS'}) \
-            .set_index("FIPS")
-
-    return gaz[["ALAND_SQMI"]]
