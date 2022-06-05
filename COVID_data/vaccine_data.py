@@ -23,6 +23,9 @@ def get_vax_data(config):
     booster  = vax_df[vax_df.CASE_TYPE == 'Booster Coverage'].pivot_table("CASES", "FIPS", "CASE_TYPE")
     complete = vax_df[vax_df.CASE_TYPE == 'Complete Coverage'].pivot_table("CASES", "FIPS", "CASE_TYPE")
 
+    ## NOTE: 'POPN' is missing 29 rows, so I stopped using it for calculating rates.
+    ## this can probably be removed.
+
     popn_by_fips = vax_df.loc[vax_df.CASE_TYPE == 'Partial Coverage', ['POPN', 'FIPS']
                                 ].set_index('FIPS')
 

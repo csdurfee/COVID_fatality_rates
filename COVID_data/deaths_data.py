@@ -101,6 +101,6 @@ def get_death_corrs(monthly=True):
     mdc = get_death_counts(monthly)
     for (month, counts) in mdc.items():
         month_joined = all_data.join(counts.rename(columns={'Deaths': "THIS_MONTH_DEATHS"}))
-        month_joined['MONTHLY_PER_CAPITA_DEATH_RATE'] = month_joined['THIS_MONTH_DEATHS'] / month_joined['POPN']
+        month_joined['MONTHLY_PER_CAPITA_DEATH_RATE'] = month_joined['THIS_MONTH_DEATHS'] / month_joined['POPULATION']
         corrs[month] = month_joined.corr()['MONTHLY_PER_CAPITA_DEATH_RATE']
     return corrs

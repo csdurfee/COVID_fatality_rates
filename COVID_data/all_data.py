@@ -38,16 +38,17 @@ def _all_data_base(config):
 
 def get_all_data(config):
     all_data = _all_data_base(config)
+    population_measure = all_data['POPULATION']
 
     ## calculate rates/aggs
-    all_data['DENSITY'] = all_data['POPN'] / all_data['ALAND_SQMI']
+    all_data['DENSITY'] = population_measure / all_data['ALAND_SQMI']
 
-    all_data['DEATH_RATE'] = all_data['DEATHS'] / all_data['POPN']
-    all_data['DEATH_RATE_FIRST_YEAR'] = all_data['DEATHS_FIRST_YEAR'] / all_data['POPN']
-    all_data['DEATH_RATE_SECOND_YEAR'] = all_data['DEATHS_SECOND_YEAR'] / all_data['POPN']
-    all_data['DEATH_RATE_ALPHA'] = all_data['ALPHA_DEATHS'] / all_data['POPN']
-    all_data['DEATH_RATE_DELTA'] = all_data['DELTA_DEATHS'] / all_data['POPN']
-    all_data['DEATH_RATE_OMICRON'] = all_data['OMICRON_DEATHS'] / all_data['POPN']
+    all_data['DEATH_RATE'] = all_data['DEATHS'] / population_measure
+    all_data['DEATH_RATE_FIRST_YEAR'] = all_data['DEATHS_FIRST_YEAR'] / population_measure
+    all_data['DEATH_RATE_SECOND_YEAR'] = all_data['DEATHS_SECOND_YEAR'] / population_measure
+    all_data['DEATH_RATE_ALPHA'] = all_data['ALPHA_DEATHS'] / population_measure
+    all_data['DEATH_RATE_DELTA'] = all_data['DELTA_DEATHS'] / population_measure
+    all_data['DEATH_RATE_OMICRON'] = all_data['OMICRON_DEATHS'] / population_measure
 
     # let's do some quartiles
     # all_data['DEATH_RATE_QUARTILE'] = pd.qcut(all_data['DEATH_RATE'], 4, labels=False)
@@ -73,7 +74,7 @@ def _filter_uninteresting(data):
         'PER_CAPITA', 
         'MEDIAN_HOUSEHOLD', # I am just going to use median family
         'HOUSEHOLDS',
-        'POPULATION',
+        #'POPULATION',
         #'State',
         #'County',
         '# of Ranked Counties',
