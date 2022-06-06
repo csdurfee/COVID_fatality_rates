@@ -46,9 +46,9 @@ def get_all_data(config):
     all_data['DEATH_RATE'] = all_data['DEATHS'] / population_measure
     all_data['DEATH_RATE_FIRST_YEAR'] = all_data['DEATHS_FIRST_YEAR'] / population_measure
     all_data['DEATH_RATE_SECOND_YEAR'] = all_data['DEATHS_SECOND_YEAR'] / population_measure
-    all_data['DEATH_RATE_ALPHA'] = all_data['ALPHA_DEATHS'] / population_measure
-    all_data['DEATH_RATE_DELTA'] = all_data['DELTA_DEATHS'] / population_measure
-    all_data['DEATH_RATE_OMICRON'] = all_data['OMICRON_DEATHS'] / population_measure
+    all_data['DEATH_RATE_ALPHA'] = all_data['DEATHS_ALPHA'] / population_measure
+    all_data['DEATH_RATE_DELTA'] = all_data['DEATHS_DELTA'] / population_measure
+    all_data['DEATH_RATE_OMICRON'] = all_data['DEATHS_OMICRON'] / population_measure
 
     # let's do some quartiles
     # all_data['DEATH_RATE_QUARTILE'] = pd.qcut(all_data['DEATH_RATE'], 4, labels=False)
@@ -74,7 +74,7 @@ def _filter_uninteresting(data):
         'PER_CAPITA', 
         'MEDIAN_HOUSEHOLD', # I am just going to use median family
         'HOUSEHOLDS',
-        #'POPULATION',
+        'POPN', # this has missing data compared to the 'POPULATION' field.
         #'State',
         #'County',
         '# of Ranked Counties',

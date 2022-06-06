@@ -37,9 +37,9 @@ def get_covid_fatality_data(config):
     ## this is because they don't report booster coverage, I think
 
     covid_df['DEATHS_SECOND_YEAR'] = covid_df["DEATHS"] - covid_df["DEATHS_FIRST_YEAR"]
-    covid_df['ALPHA_DEATHS'] = covid_df['DELTA_START'] - covid_df['ALPHA_START']
-    covid_df['DELTA_DEATHS'] = covid_df['OMICRON_START'] - covid_df['DELTA_START']
-    covid_df['OMICRON_DEATHS'] = covid_df['DEATHS'] - covid_df['OMICRON_START']
+    covid_df['DEATHS_ALPHA'] = covid_df['DELTA_START'] - covid_df['ALPHA_START']
+    covid_df['DEATHS_DELTA'] = covid_df['OMICRON_START'] - covid_df['DELTA_START']
+    covid_df['DEATHS_OMICRON'] = covid_df['DEATHS'] - covid_df['OMICRON_START']
 
 
     ## there are 3 small counties in Nebraska that report negative death rates in year 2
@@ -50,12 +50,19 @@ def get_covid_fatality_data(config):
 
 
 def get_covid_daily_fatalities():
+    if config.USE_CACHE:
+        COVID_DEATHS_URL  = config.CACHE_DIR + "/time_series_covid19_deaths_US.csv"
+    else:
+        COVID_DEATHS_URL  = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv"
+
     del_cols = ["UID", "iso2", "iso3", "code3", "Admin2", "Province_State",
                 "Country_Region", "Lat", "Long_", "Combined_Key", "Population"]
     
     deaths_df = pd.read_csv(COVID_DEATHS_URL, parse_dates = True)
 
-    melted = deaths_df.drop(columns=del_cols).melt(id_vars=["FIPS"], var_name="Date", value_name="Deaths")
+    melted = deaths_df.drop(columns=del_cols).melt(id_vars=["FIPS"], 
+                                                    var_name="Date", 
+                                                    value_name="Deaths")
 
     # convert dates from string
     melted['Date'] = melted["Date"].astype("datetime64[ns]")
