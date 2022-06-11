@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
-IMPUTATION_THRESHOLD = .1
+IMPUTATION_THRESHOLD = .05
 TEST_SIZE = 0.2
 MIN_POP = 50000 # limit to counties with over this population
 
@@ -42,7 +42,7 @@ def get_non_numeric(df):
             non_numeric.append(col)
     return non_numeric
     
-def make_train_test(df, year=1, min_pop=MIN_POP):
+def make_train_test(df, year=1, min_pop=MIN_POP, split=True):
     """
     Take raw dataframe and convert it to imputed/scaled numeric values,
     and split into train & test for building model
@@ -72,7 +72,10 @@ def make_train_test(df, year=1, min_pop=MIN_POP):
     print(f"dropping {death_cols}")
     df = df.drop(death_cols, axis=1)
 
-    (x_train, x_test, y_train, y_test) = train_test_split(df, y, test_size = TEST_SIZE)
-    x_train = normalize(x_train)
-    x_test = normalize(x_test)
-    return (x_train, x_test, y_train, y_test, df)
+    if split:
+        (x_train, x_test, y_train, y_test) = train_test_split(df, y, test_size = TEST_SIZE)
+        x_train = normalize(x_train)
+        x_test = normalize(x_test)
+        return (x_train, x_test, y_train, y_test, df)
+    else:
+        return (normalize(df), y)
