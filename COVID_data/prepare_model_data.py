@@ -78,4 +78,4 @@ def make_train_test(df, year=1, min_pop=MIN_POP, split=True):
         x_test = normalize(x_test)
         return (x_train, x_test, y_train, y_test, df)
     else:
-        return (normalize(df), y)
+        return (df, normalize(df), y)
