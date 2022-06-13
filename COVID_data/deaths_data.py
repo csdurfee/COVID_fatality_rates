@@ -99,12 +99,11 @@ def get_death_counts(monthly=True):
 
     return diffs
 
-def get_death_corrs(monthly=True):
+def get_death_corrs(all_data, monthly=True):
     ### for each monthly death count, get the correlations of other factors so they can
     ### be plotted as a series.
     corrs = {}
 
-    all_data = get_all_data()
     mdc = get_death_counts(monthly)
     for (month, counts) in mdc.items():
         month_joined = all_data.join(counts.rename(columns={'Deaths': "THIS_MONTH_DEATHS"}))
