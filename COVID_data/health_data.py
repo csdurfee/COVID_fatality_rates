@@ -168,6 +168,9 @@ def get_opioid_data():
     return data[0].drop(["State", "County"], axis=1).set_index("County FIPS Code")
 
 def get_social_vuln_data(config):
+    """
+    The CDC's 2018 Social Vulnerability Index
+    """
     # doc: https://www.atsdr.cdc.gov/placeandhealth/svi/documentation/pdf/SVI2018Documentation-H.pdf
     if config.USE_CACHE:
         SOCIAL_VULN_URL   = config.CACHE_DIR + "/SVI2018_US_COUNTY.csv"
@@ -178,6 +181,24 @@ def get_social_vuln_data(config):
     ## these are the estimated percents (EP_)
     cols = [x for x in df.columns if x.startswith("EP_")]
 
-    df2 = df.set_index("FIPS")
+    rename_cols = {
+        'EP_POV':  '% Below Poverty Line (SVI)',
+        'EP_UNEMP': '% Unemployed (SVI)',
+        'EP_PCI':   'Per Capita Income (SVI)',
+        'EP_NOHSDP': '% No HS Diploma (SVI)',
+        'EP_AGE65': '% Over 65 (SVI)',
+        'EP_AGE17': '% Under 17 (SVI)',
+        'EP_DISABL': '% Disabled (SVI)',
+        'EP_SNGPNT': '% Single Parent Households (SVI)',
+        'EP_MINRTY': '% Minority (SVI)',
+        'EP_LIMENG': '% Limited English (SVI)',
+        'EP_MUNIT':  '% Multiunit Housing (SVI)',
+        'EP_MOBILE': '% Mobile Homes (SVI)',
+        'EP_CROWD': '% Crowded Living (SVI)',
+        'EP_NOVEH': '% No Vehicle (SVI)',
+        'EP_GROUPQ': '% In Group Quarters (SVI)',
+        'EP_UNINSUR': '% Uninsured (SVI)'
+    }
 
-    return df2.loc[df2.EP_POV > -999, cols] # there's only one column with -999 values...
+    return df.loc[df.EP_POV > -999, :].set_index("FIPS").loc[:, cols].rename(columns=rename_cols)
+

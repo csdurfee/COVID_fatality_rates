@@ -62,14 +62,16 @@ def make_train_test(df, year=1, min_pop=MIN_POP, split=True):
     ## generate y: whether in top quantile of death rates or not.
     if year == 1:
         quantiles = pd.qcut(df.DEATH_RATE_FIRST_YEAR, 4, labels=False)
-    else:
+    elif year == 2:
         quantiles = pd.qcut(df.DEATH_RATE_SECOND_YEAR, 4, labels=False)
+    else:
+        quantiles = pd.qcut(df.DEATH_RATE, 4, labels=False)
 
     y = (quantiles == 3)
 
     # drop fields that are 'cheating' (raw death counts and death rates)
     death_cols = [x for x in df.columns if x.find("DEATH") > -1]
-    print(f"dropping {death_cols}")
+    #print(f"dropping {death_cols}")
     df = df.drop(death_cols, axis=1)
 
     if split:
