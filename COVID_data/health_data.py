@@ -1,5 +1,12 @@
 import pandas as pd
 
+def add_suffix(df, suff='CHR'):
+    add_suff = {}
+    for col in df.columns:
+        new_col_name = f"{col} ({suff})"
+        add_suff[col] = new_col_name
+    return df.rename(columns=add_suff)
+
 def get_ranked_data(config):
     if config.USE_CACHE:
         COUNTY_HEALTH_URL = config.CACHE_DIR + \
@@ -38,7 +45,7 @@ def get_ranked_data(config):
         'Injury Death Rate',
         '% Severe Housing Problems'
     ]
-    return foo.set_index("FIPS").loc[:, cols]
+    return add_suffix(foo.set_index("FIPS").loc[:, cols])
 
 def get_additional_measure_data(config):
     if config.USE_CACHE:
@@ -55,7 +62,6 @@ def get_additional_measure_data(config):
             'Infant Mortality Rate', 
             'Child Mortality Rate',
             'Drug Overdose Mortality Rate', 
-            #'% Uninsured', # this is duplicated under Ranked Data
             '% Insufficient Sleep',
             'Homicide Rate', 
             'Firearm Fatalities Rate', 
@@ -79,8 +85,7 @@ def get_additional_measure_data(config):
             '% Free or Reduced Lunch'
             ]
 
-    ## NO IMPUTATION
-    return measure_data.set_index("FIPS").loc[:, cols]
+    return add_suffix(measure_data.set_index("FIPS").loc[:, cols])
 
 def get_county_health_data(config):
     cols = {
@@ -130,13 +135,9 @@ def get_county_health_data(config):
         else:
             rank_name = f"Rank.{count}"
 
-        h_underscored = "_".join(h.split(" "))
-
-        col_name_on = f'{h_underscored}_Percentile'
+        col_name_on = f'{h} Percentile'
         change_dict[rank_name] =  col_name_on
         col_types[col_name_on] = float
-
-    ## Alaska is messing this up -- this is another bad join problem.
 
     subrankings = pd.read_excel(xls, "Outcomes & Factors SubRankings", header=1) \
                     .rename(columns=change_dict)
@@ -145,7 +146,6 @@ def get_county_health_data(config):
                     .astype(col_types) \
                     .dropna()
 
-    ## TODO: need to fix numeric types here
     cols = list(change_dict.values())
 
     for factor in cols:
@@ -157,7 +157,8 @@ def get_county_health_data(config):
     # only take columns we need
     subrankings = subrankings.loc[:, cols_to_get].set_index("FIPS")
 
-    return ch_rankings.join(subrankings)
+    ret = ch_rankings.join(subrankings)
+    return add_suffix(ret)
 
 def get_opioid_data():
     """US County Opioid Dispensing rates"""

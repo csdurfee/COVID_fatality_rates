@@ -41,6 +41,14 @@ def get_non_numeric(df):
         if df[col].dtype == 'object':
             non_numeric.append(col)
     return non_numeric
+
+def get_train_data(df, year):
+    """
+    Simple case: 
+        * we are using cross validation so we don't need a train/test split
+        * we are not limiting population
+    """
+    return make_train_test(df, year, min_pop=None, split=False)
     
 def make_train_test(df, year=1, min_pop=MIN_POP, split=True):
     """

@@ -50,20 +50,13 @@ def get_all_data(config):
     all_data['DEATH_RATE_DELTA'] = all_data['DEATHS_DELTA'] / population_measure
     all_data['DEATH_RATE_OMICRON'] = all_data['DEATHS_OMICRON'] / population_measure
 
-    # let's do some quartiles
-    # all_data['DEATH_RATE_QUARTILE'] = pd.qcut(all_data['DEATH_RATE'], 4, labels=False)
-    # all_data['VAX_QUARTILE']        = pd.qcut(all_data['Booster Coverage'], 4, labels=False)
-    # all_data['REPUB_QUARTILE']      = pd.qcut(all_data['REPUB_PARTISAN'], 4, labels=False)
-
-
-    ## there are some counties in Alaska we don't have voting data for. I'm not clear why this is causing
-    ## NA's since they aren't NA coming from get_political_data.  sigh.
-    # all_data['REPUB_PARTISAN'] = all_data['REPUB_PARTISAN'].fillna(0)
-    # all_data['REPUB_QUARTILE'] = all_data['REPUB_QUARTILE'].fillna(0)
-
     ## drop stuff where we have zeroes (eg Utah reporting 0 fatalities at county level)
 
-    return _filter_uninteresting(_drop_zeroes(all_data))
+    ## DEBUG! FIXME!
+    #return _filter_uninteresting(_drop_zeroes(all_data))
+
+    return all_data
+
 
 def _drop_zeroes(data):
     return data[data.DEATHS > 0]
@@ -71,17 +64,17 @@ def _drop_zeroes(data):
 def _filter_uninteresting(data):
     UNINTERESTING = [
         'PER_CAPITA_RANK',
-        'PER_CAPITA', 
-        'MEDIAN_HOUSEHOLD', # I am just going to use median family
+        # 'PER_CAPITA', 
+        # 'MEDIAN_HOUSEHOLD', # I am just going to use median family
         'HOUSEHOLDS',
         'POPN', # this has missing data compared to the 'POPULATION' field.
         #'State',
         #'County',
-        '# of Ranked Counties',
-        'HEALTH_OUTCOMES_RANK', 
-        'HEALTH_OUTCOMES_QUARTILE',
-        'HEALTH_FACTORS_RANK', 
-        'HEALTH_FACTORS_QUARTILE',
+        '# of Ranked Counties (CHR)',
+        'HEALTH_OUTCOMES_RANK (CHR)', 
+        'HEALTH_OUTCOMES_QUARTILE (CHR)',
+        'HEALTH_FACTORS_RANK (CHR)', 
+        'HEALTH_FACTORS_QUARTILE (CHR)',
         '2016_repub_votes',
         '2016_total_votes',
     ]
