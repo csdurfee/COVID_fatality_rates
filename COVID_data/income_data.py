@@ -27,9 +27,9 @@ def get_county_income_data(config):
 
     html_crud = html_crud.rename(columns = {
         'County or county-equivalent': 'COUNTY',
-        'Per capitaincome': 'PER_CAPITA', 
-        'Medianhouseholdincome': 'MEDIAN_HOUSEHOLD',  
-        'Medianfamilyincome': 'MEDIAN_FAMILY',
+        'Per capitaincome': 'Per Capita (Wikipedia)', 
+        'Medianhouseholdincome': 'Median Household (Wikipedia)',  
+        'Medianfamilyincome': 'Median Family (Wikipedia)',
         'State, federal district or territory': 'STATE',
         'Population': 'POPULATION',
         'Number ofhouseholds': 'HOUSEHOLDS',

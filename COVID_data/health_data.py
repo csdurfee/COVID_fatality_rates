@@ -142,7 +142,7 @@ def get_county_health_data(config):
     subrankings = pd.read_excel(xls, "Outcomes & Factors SubRankings", header=1) \
                     .rename(columns=change_dict)
 
-    subrankings = subrankings[subrankings['Length_of_Life_Percentile'] != 'NR'] \
+    subrankings = subrankings[subrankings['Length of Life Percentile'] != 'NR'] \
                     .astype(col_types) \
                     .dropna()
 

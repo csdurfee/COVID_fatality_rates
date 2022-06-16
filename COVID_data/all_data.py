@@ -52,11 +52,7 @@ def get_all_data(config):
 
     ## drop stuff where we have zeroes (eg Utah reporting 0 fatalities at county level)
 
-    ## DEBUG! FIXME!
-    #return _filter_uninteresting(_drop_zeroes(all_data))
-
-    return all_data
-
+    return _filter_uninteresting(_drop_zeroes(all_data))
 
 def _drop_zeroes(data):
     return data[data.DEATHS > 0]
@@ -67,7 +63,7 @@ def _filter_uninteresting(data):
         # 'PER_CAPITA', 
         # 'MEDIAN_HOUSEHOLD', # I am just going to use median family
         'HOUSEHOLDS',
-        'POPN', # this has missing data compared to the 'POPULATION' field.
+        #'POPN', # this has missing data compared to the 'POPULATION' field.
         #'State',
         #'County',
         '# of Ranked Counties (CHR)',
