@@ -47,10 +47,11 @@ def get_train_data(df, year):
     Simple case: 
         * we are using cross validation so we don't need a train/test split
         * we are not limiting population
+        * we are doing regression, not classification
     """
-    return make_train_test(df, year, min_pop=None, split=False)
+    return make_train_test(df, year, min_pop=None, regression=False, split=False)
     
-def make_train_test(df, year=1, min_pop=MIN_POP, split=True):
+def make_train_test(df, year=1, min_pop=MIN_POP, regression=False, split=True):
     """
     Take raw dataframe and convert it to imputed/scaled numeric values,
     and split into train & test for building model
@@ -67,15 +68,24 @@ def make_train_test(df, year=1, min_pop=MIN_POP, split=True):
     df = df.drop(to_drop, axis=1)
     df = impute(df, to_impute)
 
-    ## generate y: whether in top quantile of death rates or not.
-    if year == 1:
-        quantiles = pd.qcut(df.DEATH_RATE_FIRST_YEAR, 4, labels=False)
-    elif year == 2:
-        quantiles = pd.qcut(df.DEATH_RATE_SECOND_YEAR, 4, labels=False)
+    
+    if regression:
+        if year == 1:
+            y = df.DEATH_RATE_FIRST_YEAR
+        elif year == 2:
+            y = df.DEATH_RATE_SECOND_YEAR
+        else:
+            y = df.DEATH_RATE
     else:
-        quantiles = pd.qcut(df.DEATH_RATE, 4, labels=False)
+        ## generate y: whether in top quantile of death rates or not.
+        if year == 1:
+            quantiles = pd.qcut(df.DEATH_RATE_FIRST_YEAR, 4, labels=False)
+        elif year == 2:
+            quantiles = pd.qcut(df.DEATH_RATE_SECOND_YEAR, 4, labels=False)
+        else:
+            quantiles = pd.qcut(df.DEATH_RATE, 4, labels=False)
 
-    y = (quantiles == 3)
+        y = ((quantiles == 2) | (quantiles == 3))
 
     # drop fields that are 'cheating' (raw death counts and death rates)
     death_cols = [x for x in df.columns if x.find("DEATH") > -1]

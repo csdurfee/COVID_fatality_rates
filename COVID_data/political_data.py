@@ -15,6 +15,6 @@ def get_political_data(config):
                                      "totalvotes": "2016_total_votes"}) \
                     .dropna() ## there are only 3 counties (all in Alaska) with no data here.
     
-    voting_df['REPUB_PARTISAN'] = voting_df['2016_repub_votes'] / voting_df['2016_total_votes']
+    voting_df['2016 Repub Vote Share'] = voting_df['2016_repub_votes'] / voting_df['2016_total_votes']
 
     return voting_df
